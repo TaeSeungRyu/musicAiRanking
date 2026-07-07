@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { hasTargetTracks, listTracks, upsertTrack } from "@/lib/db";
+import { getMeta, listTracks, upsertChannel, upsertTrack } from "@/lib/db";
 import { fetchYoutubeInfo } from "@/lib/youtube";
 import { TARGET_CHANNEL, TARGET_CHANNEL_KEY } from "@/lib/config";
 
@@ -15,12 +15,12 @@ export async function GET() {
     target: {
       name: TARGET_CHANNEL.name,
       key: TARGET_CHANNEL_KEY,
-      hasTarget: hasTargetTracks(),
+      seeded: getMeta("target_seeded") === "1",
     },
   });
 }
 
-// POST /api/tracks  →  { url } 로 곡 추가/갱신
+// POST /api/tracks  →  { url } 로 곡 추가/갱신 (단건)
 export async function POST(request: Request) {
   let body: { url?: string };
   try {
@@ -43,7 +43,17 @@ export async function POST(request: Request) {
       thumbnail: info.thumbnail,
       view_count: info.viewCount,
       url: info.url,
+      source_key: info.channelId,
     });
+    // 설정 화면 관리용으로 이 영상의 채널도 등록
+    if (info.channelId) {
+      upsertChannel({
+        key: info.channelId,
+        name: info.channel,
+        url: `https://www.youtube.com/channel/${info.channelId}`,
+        is_target: false,
+      });
+    }
     return NextResponse.json({ track }, { status: 201 });
   } catch (err) {
     const message =

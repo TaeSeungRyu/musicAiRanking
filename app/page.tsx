@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Track {
   id: number;
@@ -17,7 +18,7 @@ interface Track {
 interface TargetInfo {
   name: string;
   key: string;
-  hasTarget: boolean;
+  seeded: boolean;
 }
 
 function formatViews(n: number): string {
@@ -68,7 +69,7 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       const t = await loadTracks();
-      if (t && !t.hasTarget) {
+      if (t && !t.seeded) {
         setSeeding(true);
         try {
           await fetch("/api/seed", { method: "POST" });
@@ -129,7 +130,7 @@ export default function Home() {
       <header className="bg-primary text-on-primary elevation-2">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-4 sm:py-5">
           <Icon name="music_note" className="text-3xl" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="text-xl font-medium sm:text-2xl">음원 랭킹</h1>
             <p className="truncate text-xs text-on-primary/80 sm:text-sm">
               기본 채널{" "}
@@ -137,6 +138,14 @@ export default function Home() {
               · 다른 채널을 넣으면 함께 비교
             </p>
           </div>
+          <Link
+            href="/settings"
+            aria-label="설정 · 채널 관리"
+            title="설정 · 채널 관리"
+            className="state-layer flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          >
+            <Icon name="settings" className="text-2xl" />
+          </Link>
         </div>
       </header>
 

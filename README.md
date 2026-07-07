@@ -9,6 +9,7 @@ YouTube URL을 입력하면 곡 **제목 · 채널 · 조회수**를 자동으�
 - YouTube URL 붙여넣기 → 제목/조회수 자동 수집 (**API 키 불필요**)
 - **채널 URL 입력 시 최신 영상(최대 30개)을 한 번에 일괄 추가**
 - **기본(대상) 채널이 항상 기본 표시** — 다른 채널을 넣으면 대상 채널과 **한 랭킹에서 비교** (대상/비교 배지로 구분)
+- **설정 화면(`/settings`)에서 채널 관리** — 채널을 제거하면 해당 채널 영상이 랭킹에서 전부 내려감 (대상 채널 제거 시 재수집도 하지 않음)
 - 조회수 내림차순 랭킹 자동 정렬
 - 클릭 시 원본 YouTube로 이동
 - SQLite에 자동 저장 (재실행해도 데이터 유지)
@@ -48,6 +49,9 @@ app/
   api/tracks/[id]/route.ts  DELETE(삭제)
   api/channel/route.ts  POST(채널 영상 일괄 추가/비교)
   api/seed/route.ts     POST(대상 채널 최초 자동 수집)
+  api/channels/route.ts GET(채널 목록)
+  api/channels/[key]/route.ts  DELETE(채널+영상 일괄 제거)
+  settings/page.tsx     설정 · 채널 관리 화면
 lib/
   config.ts             기본 대상 채널 설정
   db.ts                 SQLite 초기화 및 쿼리

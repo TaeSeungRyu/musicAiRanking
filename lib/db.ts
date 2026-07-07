@@ -32,6 +32,19 @@ export const db =
         created_at  TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
       );
+
+      CREATE TABLE IF NOT EXISTS channels (
+        key        TEXT PRIMARY KEY,
+        name       TEXT,
+        url        TEXT,
+        is_target  INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS meta (
+        key   TEXT PRIMARY KEY,
+        value TEXT
+      );
     `);
 
     // 기존 DB 마이그레이션: 없으면 컬럼 추가
@@ -65,6 +78,15 @@ export interface Track {
   source_key: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface Channel {
+  key: string;
+  name: string | null;
+  url: string | null;
+  is_target: number;
+  created_at: string;
+  track_count: number;
 }
 
 const insertStmt = db.prepare(`
@@ -107,14 +129,61 @@ export function listTracks(): Track[] {
     .all() as Track[];
 }
 
-/** 대상(기본) 채널 영상이 이미 저장돼 있는지 여부 */
-export function hasTargetTracks(): boolean {
-  const row = db
-    .prepare("SELECT COUNT(*) AS n FROM tracks WHERE is_target = 1")
-    .get() as { n: number };
-  return row.n > 0;
-}
-
 export function deleteTrack(id: number): void {
   db.prepare("DELETE FROM tracks WHERE id = ?").run(id);
+}
+
+/* ── 채널(설정 화면용) ─────────────────────────────── */
+
+const upsertChannelStmt = db.prepare(`
+  INSERT INTO channels (key, name, url, is_target)
+  VALUES (@key, @name, @url, @is_target)
+  ON CONFLICT(key) DO UPDATE SET
+    name      = excluded.name,
+    url       = excluded.url,
+    is_target = MAX(channels.is_target, excluded.is_target)
+`);
+
+export function upsertChannel(channel: {
+  key: string;
+  name: string | null;
+  url: string | null;
+  is_target?: boolean;
+}): void {
+  upsertChannelStmt.run({
+    ...channel,
+    is_target: channel.is_target ? 1 : 0,
+  });
+}
+
+export function listChannels(): Channel[] {
+  return db
+    .prepare(
+      `SELECT c.*,
+              (SELECT COUNT(*) FROM tracks t WHERE t.source_key = c.key) AS track_count
+         FROM channels c
+     ORDER BY c.is_target DESC, c.created_at ASC`
+    )
+    .all() as Channel[];
+}
+
+/** 채널과 해당 채널의 모든 영상을 함께 삭제 (트랜잭션) */
+export const deleteChannelCascade = db.transaction((key: string) => {
+  db.prepare("DELETE FROM tracks WHERE source_key = ?").run(key);
+  db.prepare("DELETE FROM channels WHERE key = ?").run(key);
+});
+
+/* ── meta (키-값) ─────────────────────────────── */
+
+export function getMeta(key: string): string | null {
+  const row = db.prepare("SELECT value FROM meta WHERE key = ?").get(key) as
+    | { value: string }
+    | undefined;
+  return row?.value ?? null;
+}
+
+export function setMeta(key: string, value: string): void {
+  db.prepare(
+    "INSERT INTO meta (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  ).run(key, value);
 }

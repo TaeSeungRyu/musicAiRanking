@@ -4,6 +4,7 @@ export interface YoutubeInfo {
   videoId: string;
   title: string;
   channel: string | null;
+  channelId: string | null;
   thumbnail: string;
   viewCount: number;
   url: string;
@@ -145,6 +146,7 @@ export async function fetchYoutubeInfo(rawUrl: string): Promise<YoutubeInfo> {
     videoId,
     title: details.title,
     channel: details.author ?? null,
+    channelId: details.channelId ?? null,
     thumbnail,
     viewCount,
     url: watchUrl,
