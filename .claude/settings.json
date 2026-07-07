@@ -35,7 +35,12 @@
       "Bash(curl -s http://localhost:3000/api/debug-ids?url=https://www.youtube.com/@BLACKPINK/videos --max-time 200)",
       "Bash(curl -s http://localhost:3000/api/debug-ids?url=https://www.youtube.com/@BLACKPINK/videos --max-time 250)",
       "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('firstPageCollected:',j.firstPageCollected,'total:',j.total\\);console.log\\('steps:',JSON.stringify\\(j.steps.slice\\(0,5\\)\\)\\);console.log\\('...pages:',j.steps.length\\);}\\)\")",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('firstPageCollected:',j.firstPageCollected,'total:',j.total,'pages:',j.steps.length\\);console.log\\('first 3 steps:',JSON.stringify\\(j.steps.slice\\(0,3\\)\\)\\);}\\)\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('firstPageCollected:',j.firstPageCollected,'total:',j.total,'pages:',j.steps.length\\);console.log\\('first 3 steps:',JSON.stringify\\(j.steps.slice\\(0,3\\)\\)\\);}\\)\")",
+      "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' http://localhost:3000/settings)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' http://localhost:3000/api/tracks)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' http://localhost:3000/api/channels)",
+      "Bash(curl -s -X POST http://localhost:3000/api/tracks -H 'Content-Type: application/json' -d '{\"url\":\"not-a-url\"}')"
     ]
   }
 }

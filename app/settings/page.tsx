@@ -74,7 +74,8 @@ export default function Settings() {
           <div>
             <h1 className="text-xl font-medium sm:text-2xl">설정 · 채널 관리</h1>
             <p className="text-xs text-on-primary/80 sm:text-sm">
-              채널을 제거하면 해당 영상이 랭킹에서 모두 내려갑니다.
+              채널 제거 시 해당 영상이 모두 내려갑니다. 기본 채널은 제거
+              불가이며 1시간마다 자동 최신화됩니다.
             </p>
           </div>
         </div>
@@ -139,18 +140,28 @@ export default function Settings() {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => handleRemove(ch)}
-                  disabled={removing === ch.key}
-                  className="state-layer flex h-10 items-center gap-1.5 rounded-m3-xl border border-outline px-4 text-sm font-medium text-error transition-colors hover:bg-error-container disabled:opacity-50"
-                >
-                  {removing === ch.key ? (
-                    <Icon name="progress_activity" className="animate-spin text-lg" />
-                  ) : (
-                    <Icon name="delete" className="text-lg" />
-                  )}
-                  제거
-                </button>
+                {ch.is_target === 1 ? (
+                  <span
+                    title="기본 대상 채널은 제거할 수 없습니다."
+                    className="flex h-10 shrink-0 items-center gap-1.5 rounded-m3-xl px-4 text-sm font-medium text-on-surface-variant"
+                  >
+                    <Icon name="lock" className="text-lg" />
+                    제거 불가
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleRemove(ch)}
+                    disabled={removing === ch.key}
+                    className="state-layer flex h-10 items-center gap-1.5 rounded-m3-xl border border-outline px-4 text-sm font-medium text-error transition-colors hover:bg-error-container disabled:opacity-50"
+                  >
+                    {removing === ch.key ? (
+                      <Icon name="progress_activity" className="animate-spin text-lg" />
+                    ) : (
+                      <Icon name="delete" className="text-lg" />
+                    )}
+                    제거
+                  </button>
+                )}
               </li>
             ))}
           </ul>

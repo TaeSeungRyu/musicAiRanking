@@ -173,6 +173,50 @@ export const deleteChannelCascade = db.transaction((key: string) => {
   db.prepare("DELETE FROM channels WHERE key = ?").run(key);
 });
 
+/** 해당 채널이 (제거 불가한) 대상 채널인지 여부 */
+export function isChannelTarget(key: string): boolean {
+  const row = db
+    .prepare("SELECT is_target FROM channels WHERE key = ?")
+    .get(key) as { is_target: number } | undefined;
+  return row?.is_target === 1;
+}
+
+/**
+ * 채널 수집 결과로 기존 데이터를 통째로 교체합니다 (기존 제거 후 재등록).
+ * 재수집 시 삭제된 영상이 남지 않도록, 한 트랜잭션에서 delete → insert.
+ */
+export const replaceChannelData = db.transaction(
+  (params: {
+    key: string;
+    name: string | null;
+    url: string | null;
+    is_target: boolean;
+    tracks: Array<{
+      video_id: string;
+      title: string;
+      channel: string | null;
+      thumbnail: string | null;
+      view_count: number;
+      url: string;
+    }>;
+  }) => {
+    db.prepare("DELETE FROM tracks WHERE source_key = ?").run(params.key);
+    for (const t of params.tracks) {
+      insertStmt.run({
+        ...t,
+        is_target: params.is_target ? 1 : 0,
+        source_key: params.key,
+      });
+    }
+    upsertChannelStmt.run({
+      key: params.key,
+      name: params.name,
+      url: params.url,
+      is_target: params.is_target ? 1 : 0,
+    });
+  }
+);
+
 /* ── meta (키-값) ─────────────────────────────── */
 
 export function getMeta(key: string): string | null {
