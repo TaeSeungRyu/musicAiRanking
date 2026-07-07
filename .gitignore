@@ -1,0 +1,24 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+*.pem
+.DS_Store
+
+# debug logs
+npm-debug.log*
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# local database (자동 생성됨)
+/data/*.db
+/data/*.db-*

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(node -v)",
+      "PowerShell(npm -v)",
+      "PowerShell(npm install --no-audit --no-fund 2>&1)",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell($env:PORT=3000; Start-Process -FilePath \"npm\" -ArgumentList \"run\",\"dev\" -WindowStyle Hidden -RedirectStandardOutput \"d:\\\\dev\\\\nodejs_workspace\\\\musicAiRanking\\\\dev.log\" -RedirectStandardError \"d:\\\\dev\\\\nodejs_workspace\\\\musicAiRanking\\\\dev.err.log\"; Write-Output \"dev server starting...\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/api/tracks)",
+      "Bash(curl -s -X POST http://localhost:3000/api/tracks -H \"Content-Type: application/json\" -d '{\"url\":\"https://youtu.be/dQw4w9WgXcQ\"}')",
+      "Bash(curl -s -X POST http://localhost:3000/api/tracks -H \"Content-Type: application/json\" -d '{\"url\":\"https://www.youtube.com/watch?v=9bZkp7q19f0\"}')",
+      "Bash(curl -s http://localhost:3000/api/tracks)",
+      "Bash(curl -s -X POST http://localhost:3000/api/tracks -H \"Content-Type: application/json\" -d '{\"url\":\"not-a-url\"}')",
+      "Bash(curl -s -X DELETE http://localhost:3000/api/tracks/1)",
+      "PowerShell(git config user.name)",
+      "PowerShell(git config user.email)",
+      "PowerShell(gh auth status 2>&1)",
+      "PowerShell(git init; git add -A; git status --short | Select-Object -First 30; Write-Output \"--- total staged ---\"; \\(git status --short | Measure-Object -Line\\).Lines)"
+    ]
+  }
+}
