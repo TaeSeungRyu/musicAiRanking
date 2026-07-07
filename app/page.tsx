@@ -41,6 +41,10 @@ export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // 영상이 아닌 채널 URL(@handle, /channel/, /c/, /user/)인지 간단 판별
+  const looksLikeChannel = /youtube\.com\/(@|channel\/|c\/|user\/)/i.test(url);
 
   async function loadTracks() {
     const res = await fetch("/api/tracks");
@@ -58,17 +62,26 @@ export default function Home() {
 
     setLoading(true);
     setError(null);
+    setNotice(null);
     try {
-      const res = await fetch("/api/tracks", {
+      const endpoint = looksLikeChannel ? "/api/channel" : "/api/tracks";
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "곡을 추가하지 못했습니다.");
+        setError(data.error ?? "추가하지 못했습니다.");
       } else {
         setUrl("");
+        if (looksLikeChannel) {
+          setNotice(
+            `채널에서 ${data.added}개 추가 완료${
+              data.failed ? ` (${data.failed}개 실패)` : ""
+            }`
+          );
+        }
         await loadTracks();
       }
     } catch {
@@ -106,13 +119,13 @@ export default function Home() {
         >
           <div className="flex flex-1 items-center gap-2 rounded-m3 border border-outline-variant bg-surface px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
             <Icon
-              name="link"
+              name={looksLikeChannel ? "subscriptions" : "link"}
               className="text-xl text-on-surface-variant"
             />
             <input
               type="text"
               inputMode="url"
-              placeholder="YouTube URL 붙여넣기"
+              placeholder="YouTube 영상 또는 채널 URL 붙여넣기"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               disabled={loading}
@@ -131,12 +144,31 @@ export default function Home() {
               </>
             ) : (
               <>
-                <Icon name="add" className="text-xl" />
-                추가하기
+                <Icon
+                  name={looksLikeChannel ? "playlist_add" : "add"}
+                  className="text-xl"
+                />
+                {looksLikeChannel ? "채널 추가" : "추가하기"}
               </>
             )}
           </button>
         </form>
+
+        {/* 채널 모드 안내 */}
+        {looksLikeChannel && !loading && (
+          <p className="mt-2 flex items-center gap-1.5 px-1 text-xs text-on-surface-variant">
+            <Icon name="info" className="text-sm" />
+            채널의 최신 영상(최대 30개)을 한 번에 가져옵니다.
+          </p>
+        )}
+
+        {/* 성공 안내 (Material secondary container) */}
+        {notice && (
+          <div className="mt-4 flex items-center gap-2 rounded-m3 bg-secondary-container px-4 py-3 text-sm text-on-secondary-container">
+            <Icon name="check_circle" className="text-xl" />
+            <span>{notice}</span>
+          </div>
+        )}
 
         {/* 에러 (Material error container) */}
         {error && (

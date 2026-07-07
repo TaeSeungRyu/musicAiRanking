@@ -46,9 +46,8 @@ export function extractVideoId(input: string): string | null {
   return null;
 }
 
-/** ytInitialPlayerResponse JSON을 HTML에서 안전하게 추출 */
-function extractPlayerResponse(html: string): any | null {
-  const marker = "ytInitialPlayerResponse";
+/** 지정한 마커(변수명) 뒤의 JSON 객체를 HTML에서 안전하게 추출 */
+function extractJsonAfterMarker(html: string, marker: string): any | null {
   const start = html.indexOf(marker);
   if (start === -1) return null;
 
@@ -117,7 +116,7 @@ export async function fetchYoutubeInfo(rawUrl: string): Promise<YoutubeInfo> {
   }
 
   const html = await res.text();
-  const player = extractPlayerResponse(html);
+  const player = extractJsonAfterMarker(html, "ytInitialPlayerResponse");
 
   if (!player) {
     throw new Error("영상 정보를 파싱하지 못했습니다. 잠시 후 다시 시도해 주세요.");
@@ -150,4 +149,95 @@ export async function fetchYoutubeInfo(rawUrl: string): Promise<YoutubeInfo> {
     viewCount,
     url: watchUrl,
   };
+}
+
+const CHANNEL_PATH_RE = /^\/(?:@[^/]+|channel\/[^/]+|c\/[^/]+|user\/[^/]+)/;
+
+/** 입력이 (영상이 아닌) YouTube 채널 URL인지 판별 */
+export function isChannelUrl(input: string): boolean {
+  const raw = input.trim();
+  // 영상 ID/URL이면 채널이 아님
+  if (extractVideoId(raw)) return false;
+
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    return false;
+  }
+  const host = url.hostname.replace(/^www\./, "");
+  if (host !== "youtube.com" && host !== "m.youtube.com") return false;
+  return CHANNEL_PATH_RE.test(url.pathname);
+}
+
+/** 채널 URL을 해당 채널의 "동영상" 탭 URL로 정규화 */
+function toChannelVideosUrl(input: string): string {
+  const url = new URL(input.trim());
+  const match = url.pathname.match(CHANNEL_PATH_RE);
+  const base = match ? match[0] : url.pathname;
+  return `https://www.youtube.com${base.replace(/\/$/, "")}/videos`;
+}
+
+/**
+ * 채널의 "동영상" 탭에서 영상 ID 목록을 추출합니다 (최신순, 초기 로드분).
+ * @throws 채널을 찾을 수 없거나 영상이 없을 때
+ */
+export async function fetchChannelVideoIds(
+  channelUrl: string,
+  limit = 30
+): Promise<string[]> {
+  const videosUrl = toChannelVideosUrl(channelUrl);
+
+  const res = await fetch(videosUrl, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      "Accept-Language": "ko,en;q=0.9",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`채널 요청 실패 (HTTP ${res.status})`);
+  }
+
+  const html = await res.text();
+  const data = extractJsonAfterMarker(html, "ytInitialData");
+
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  const push = (id: unknown) => {
+    if (typeof id === "string" && /^[a-zA-Z0-9_-]{11}$/.test(id) && !seen.has(id)) {
+      seen.add(id);
+      ids.push(id);
+    }
+  };
+
+  // 1차: ytInitialData의 richGrid 구조에서 videoId 수집 (순서 보존)
+  if (data) {
+    const collect = (node: any) => {
+      if (!node || typeof node !== "object" || ids.length >= limit) return;
+      if (Array.isArray(node)) {
+        for (const item of node) collect(item);
+        return;
+      }
+      const vr = node.videoRenderer ?? node.gridVideoRenderer;
+      if (vr?.videoId) push(vr.videoId);
+      for (const key of Object.keys(node)) collect(node[key]);
+    };
+    collect(data);
+  }
+
+  // 2차(폴백): 구조 파싱 실패 시 HTML 전체에서 정규식으로 videoId 추출
+  if (ids.length === 0) {
+    const re = /"videoId":"([a-zA-Z0-9_-]{11})"/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(html)) && ids.length < limit) push(m[1]);
+  }
+
+  if (ids.length === 0) {
+    throw new Error("채널에서 영상을 찾지 못했습니다. URL을 확인해 주세요.");
+  }
+
+  return ids.slice(0, limit);
 }

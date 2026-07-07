@@ -21,7 +21,10 @@
       "PowerShell(git remote add origin https://github.com/TaeSeungRyu/musicAiRanking.git)",
       "PowerShell(git push -u origin main 2>&1)",
       "PowerShell(npm install -D tailwindcss@latest @tailwindcss/postcss@latest postcss@latest --no-audit --no-fund 2>&1)",
-      "PowerShell(git add -A)"
+      "PowerShell(git add -A)",
+      "PowerShell(git push 2>&1)",
+      "Bash(curl -s -X POST http://localhost:3000/api/channel -H \"Content-Type: application/json\" -d '{\"url\":\"https://www.youtube.com/@hyangguni\"}' -w \"\\\\n[status: %{http_code}]\\\\n\" --max-time 120)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const t=JSON.parse\\(d\\).tracks;console.log\\('total:',t.length\\);t.slice\\(0,5\\).forEach\\(\\(x,i\\)=>console.log\\(\\(i+1\\)+'.',x.view_count.toLocaleString\\(\\),'-',x.title\\)\\);}\\)\")"
     ]
   }
 }
