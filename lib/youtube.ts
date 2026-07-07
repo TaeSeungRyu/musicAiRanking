@@ -170,6 +170,22 @@ export function isChannelUrl(input: string): boolean {
   return CHANNEL_PATH_RE.test(url.pathname);
 }
 
+/**
+ * 채널 URL을 비교용 정규화 키로 변환합니다 (탭/쿼리/대소문자 무시).
+ * 예) https://www.youtube.com/@Hyangguni/videos → "@hyangguni"
+ */
+export function channelKey(input: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(input.trim());
+  } catch {
+    return null;
+  }
+  const match = url.pathname.match(CHANNEL_PATH_RE);
+  if (!match) return null;
+  return match[0].replace(/^\//, "").toLowerCase();
+}
+
 /** 채널 URL을 해당 채널의 "동영상" 탭 URL로 정규화 */
 function toChannelVideosUrl(input: string): string {
   const url = new URL(input.trim());

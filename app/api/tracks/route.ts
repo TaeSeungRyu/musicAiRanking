@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
-import { listTracks, upsertTrack } from "@/lib/db";
+import { hasTargetTracks, listTracks, upsertTrack } from "@/lib/db";
 import { fetchYoutubeInfo } from "@/lib/youtube";
+import { TARGET_CHANNEL, TARGET_CHANNEL_KEY } from "@/lib/config";
 
 // SQLite/네이티브 모듈 사용 → Node 런타임 강제
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/tracks  →  조회수 내림차순 랭킹 목록
+// GET /api/tracks  →  조회수 내림차순 랭킹 목록 + 대상 채널 정보
 export async function GET() {
   const tracks = listTracks();
-  return NextResponse.json({ tracks });
+  return NextResponse.json({
+    tracks,
+    target: {
+      name: TARGET_CHANNEL.name,
+      key: TARGET_CHANNEL_KEY,
+      hasTarget: hasTargetTracks(),
+    },
+  });
 }
 
 // POST /api/tracks  →  { url } 로 곡 추가/갱신

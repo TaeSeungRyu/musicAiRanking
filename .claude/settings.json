@@ -24,7 +24,11 @@
       "PowerShell(git add -A)",
       "PowerShell(git push 2>&1)",
       "Bash(curl -s -X POST http://localhost:3000/api/channel -H \"Content-Type: application/json\" -d '{\"url\":\"https://www.youtube.com/@hyangguni\"}' -w \"\\\\n[status: %{http_code}]\\\\n\" --max-time 120)",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const t=JSON.parse\\(d\\).tracks;console.log\\('total:',t.length\\);t.slice\\(0,5\\).forEach\\(\\(x,i\\)=>console.log\\(\\(i+1\\)+'.',x.view_count.toLocaleString\\(\\),'-',x.title\\)\\);}\\)\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const t=JSON.parse\\(d\\).tracks;console.log\\('total:',t.length\\);t.slice\\(0,5\\).forEach\\(\\(x,i\\)=>console.log\\(\\(i+1\\)+'.',x.view_count.toLocaleString\\(\\),'-',x.title\\)\\);}\\)\")",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\('tracks:',j.tracks.length,'| hasTarget:',j.target.hasTarget,'| all is_target=1?',j.tracks.every\\(t=>t.is_target===1\\)\\);}\\)\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/seed)",
+      "Bash(curl -s -X POST http://localhost:3000/api/channel -H 'Content-Type: application/json' -d '{\"url\":\"https://www.youtube.com/@JYPEntertainment\"}' -w '\\\\n[status %{http_code}]\\\\n' --max-time 120)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\).on\\('end',\\(\\)=>{const t=JSON.parse\\(d\\).tracks;const tgt=t.filter\\(x=>x.is_target===1\\).length;console.log\\('total:',t.length,'| target:',tgt,'| comparison:',t.length-tgt\\);console.log\\('--- top 5 \\(combined, view desc\\) ---'\\);t.slice\\(0,5\\).forEach\\(\\(x,i\\)=>console.log\\(\\(i+1\\)+'.',x.is_target?'[대상]':'[비교]',x.view_count.toLocaleString\\(\\),'-',x.title.slice\\(0,40\\)\\)\\);}\\)\")"
     ]
   }
 }

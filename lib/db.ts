@@ -27,10 +27,25 @@ export const db =
         thumbnail   TEXT,
         view_count  INTEGER NOT NULL DEFAULT 0,
         url         TEXT NOT NULL,
+        is_target   INTEGER NOT NULL DEFAULT 0,
+        source_key  TEXT,
         created_at  TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at  TEXT NOT NULL DEFAULT (datetime('now'))
       );
     `);
+
+    // 기존 DB 마이그레이션: 없으면 컬럼 추가
+    const cols = new Set(
+      (instance.prepare("PRAGMA table_info(tracks)").all() as { name: string }[]).map(
+        (c) => c.name
+      )
+    );
+    if (!cols.has("is_target")) {
+      instance.exec("ALTER TABLE tracks ADD COLUMN is_target INTEGER NOT NULL DEFAULT 0");
+    }
+    if (!cols.has("source_key")) {
+      instance.exec("ALTER TABLE tracks ADD COLUMN source_key TEXT");
+    }
     return instance;
   })();
 
@@ -46,19 +61,23 @@ export interface Track {
   thumbnail: string | null;
   view_count: number;
   url: string;
+  is_target: number;
+  source_key: string | null;
   created_at: string;
   updated_at: string;
 }
 
 const insertStmt = db.prepare(`
-  INSERT INTO tracks (video_id, title, channel, thumbnail, view_count, url)
-  VALUES (@video_id, @title, @channel, @thumbnail, @view_count, @url)
+  INSERT INTO tracks (video_id, title, channel, thumbnail, view_count, url, is_target, source_key)
+  VALUES (@video_id, @title, @channel, @thumbnail, @view_count, @url, @is_target, @source_key)
   ON CONFLICT(video_id) DO UPDATE SET
     title      = excluded.title,
     channel    = excluded.channel,
     thumbnail  = excluded.thumbnail,
     view_count = excluded.view_count,
     url        = excluded.url,
+    is_target  = excluded.is_target,
+    source_key = excluded.source_key,
     updated_at = datetime('now')
 `);
 
@@ -69,8 +88,14 @@ export function upsertTrack(track: {
   thumbnail: string | null;
   view_count: number;
   url: string;
+  is_target?: boolean;
+  source_key?: string | null;
 }): Track {
-  insertStmt.run(track);
+  insertStmt.run({
+    ...track,
+    is_target: track.is_target ? 1 : 0,
+    source_key: track.source_key ?? null,
+  });
   return db
     .prepare("SELECT * FROM tracks WHERE video_id = ?")
     .get(track.video_id) as Track;
@@ -80,6 +105,14 @@ export function listTracks(): Track[] {
   return db
     .prepare("SELECT * FROM tracks ORDER BY view_count DESC, updated_at DESC")
     .all() as Track[];
+}
+
+/** 대상(기본) 채널 영상이 이미 저장돼 있는지 여부 */
+export function hasTargetTracks(): boolean {
+  const row = db
+    .prepare("SELECT COUNT(*) AS n FROM tracks WHERE is_target = 1")
+    .get() as { n: number };
+  return row.n > 0;
 }
 
 export function deleteTrack(id: number): void {
