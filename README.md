@@ -50,6 +50,8 @@ data/
 ## ⚙️ 기술 스택
 
 - **Next.js 15** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS v4** + **Material Design 3** 테마 (Roboto · Material Symbols)
+- 모바일 반응형 UI (Top App Bar, elevation, state layer)
 - **better-sqlite3** (사전 빌드 바이너리 → 별도 컴파일 불필요)
 
 ## 📝 참고

@@ -13,4 +13,4 @@ db가 필요하다면 sqlite를 구성
 
 ### 3번 질문
 
-대상 사이트 : https://www.youtube.com/@hyangguni
+대상 사이트 : https://www.youtube.com/@hyangguni/videos

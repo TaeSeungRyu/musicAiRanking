@@ -16,7 +16,12 @@
       "PowerShell(git config user.name)",
       "PowerShell(git config user.email)",
       "PowerShell(gh auth status 2>&1)",
-      "PowerShell(git init; git add -A; git status --short | Select-Object -First 30; Write-Output \"--- total staged ---\"; \\(git status --short | Measure-Object -Line\\).Lines)"
+      "PowerShell(git init; git add -A; git status --short | Select-Object -First 30; Write-Output \"--- total staged ---\"; \\(git status --short | Measure-Object -Line\\).Lines)",
+      "PowerShell(git branch -M main)",
+      "PowerShell(git remote add origin https://github.com/TaeSeungRyu/musicAiRanking.git)",
+      "PowerShell(git push -u origin main 2>&1)",
+      "PowerShell(npm install -D tailwindcss@latest @tailwindcss/postcss@latest postcss@latest --no-audit --no-fund 2>&1)",
+      "PowerShell(git add -A)"
     ]
   }
 }
