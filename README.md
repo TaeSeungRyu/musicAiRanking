@@ -51,6 +51,7 @@ app/
   api/tracks/[id]/route.ts  DELETE(삭제)
   api/channel/route.ts  POST(채널 영상 일괄 추가/비교)
   api/seed/route.ts     POST(대상 채널 최초 자동 수집)
+  api/refresh/route.ts  POST(대상 채널 최신화 — 스케줄러가 호출)
   api/channels/route.ts GET(채널 목록)
   api/channels/[key]/route.ts  DELETE(채널+영상 일괄 제거)
   settings/page.tsx     설정 · 채널 관리 화면

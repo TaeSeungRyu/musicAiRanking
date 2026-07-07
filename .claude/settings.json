@@ -40,7 +40,11 @@
       "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' http://localhost:3000/settings)",
       "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' http://localhost:3000/api/tracks)",
       "Bash(curl -s -o /dev/null -w '%{http_code}\\\\n' http://localhost:3000/api/channels)",
-      "Bash(curl -s -X POST http://localhost:3000/api/tracks -H 'Content-Type: application/json' -d '{\"url\":\"not-a-url\"}')"
+      "Bash(curl -s -X POST http://localhost:3000/api/tracks -H 'Content-Type: application/json' -d '{\"url\":\"not-a-url\"}')",
+      "Bash(git commit -m 'Protect target channel, hourly refresh, replace-on-collect \\(마지막 질문\\)' -m '- 대상 채널은 설정 화면에 보이지만 제거 불가 \\(DELETE 403, UI '\\\\''제거 불가'\\\\''\\) *)",
+      "Bash(git push *)",
+      "Bash(rm -rf .next)",
+      "Bash(git commit -m 'Fix '\\\\''Can'\\\\''t resolve fs'\\\\'' by decoupling scheduler from native module' -m 'instrumentation.ts가 lib/db\\(better-sqlite3\\)를 직접 import하면 edge 번들에서 fs 해석 실패. *)"
     ]
   }
 }
