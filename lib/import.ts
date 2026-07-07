@@ -1,8 +1,8 @@
 import { upsertChannel, upsertTrack } from "./db";
-import { channelKey, fetchChannelVideoIds, fetchYoutubeInfo } from "./youtube";
+import { channelKey, fetchAllChannelVideoIds, fetchYoutubeInfo } from "./youtube";
 import { isTargetChannel } from "./config";
 
-const MAX_VIDEOS = 30; // 채널당 최신 영상 수 제한
+const MAX_VIDEOS = 1000; // 안전 상한 (폭주 방지) — 사실상 전체 영상 수집
 const CONCURRENCY = 5; // 동시 요청 수 제한 (YouTube 부하 최소화)
 
 export interface ImportResult {
@@ -12,13 +12,13 @@ export interface ImportResult {
 }
 
 /**
- * 채널의 최신 영상들을 조회수와 함께 수집해 저장합니다.
+ * 채널의 전체 영상을 조회수와 함께 수집해 저장합니다 (continuation 페이지네이션).
  * source_key 는 실제 channelId 로 저장되어 채널 단위 관리(설정 화면 제거)에 사용됩니다.
  * 대상(기본) 채널이면 is_target=1 로 표시합니다.
  */
 export async function importChannelVideos(url: string): Promise<ImportResult> {
   const target = isTargetChannel(url);
-  const videoIds = await fetchChannelVideoIds(url, MAX_VIDEOS);
+  const videoIds = await fetchAllChannelVideoIds(url, MAX_VIDEOS);
 
   let added = 0;
   let failed = 0;

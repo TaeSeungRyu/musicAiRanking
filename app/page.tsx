@@ -196,7 +196,7 @@ export default function Home() {
         {looksLikeChannel && !loading && (
           <p className="mt-2 flex items-center gap-1.5 px-1 text-xs text-on-surface-variant">
             <Icon name="info" className="text-sm" />
-            채널의 최신 영상(최대 30개)을 가져와 대상 채널과 함께 랭킹합니다.
+            채널의 전체 영상을 가져와 대상 채널과 함께 랭킹합니다. (영상이 많으면 시간이 걸릴 수 있어요)
           </p>
         )}
 
