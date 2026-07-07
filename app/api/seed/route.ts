@@ -17,8 +17,11 @@ export async function POST() {
 
   try {
     const result = await importChannelVideos(TARGET_CHANNEL.url);
-    setMeta(SEED_FLAG, "1");
-    return NextResponse.json({ seeded: true, ...result });
+    // 실제로 1개 이상 수집된 경우에만 시드 완료로 표시 (일시 오류 시 다음 접속에 재시도)
+    if (result.added > 0) {
+      setMeta(SEED_FLAG, "1");
+    }
+    return NextResponse.json({ seeded: result.added > 0, ...result });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "대상 채널을 불러오지 못했습니다.";
